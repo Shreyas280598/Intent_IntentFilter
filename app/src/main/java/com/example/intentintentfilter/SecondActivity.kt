@@ -1,8 +1,12 @@
 package com.example.intentintentfilter
 
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,24 +20,27 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import coil.compose.AsyncImage
 import com.example.intentintentfilter.ui.theme.IntentIntentFilterTheme
 
 class SecondActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            var text by remember {
-                mutableStateOf("text")
+            var uri: Uri? by remember {
+                mutableStateOf(null)
             }
             IntentIntentFilterTheme {
-                text  = intent.getStringExtra("plainText").toString()
+                uri = intent.getParcelableExtra("plainImage", Uri::class.java)
                 // A surface container using the 'background' color from the theme
                 Column(
                     modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(text = text)
+                    AsyncImage(
+                        model = uri,
+                        contentDescription = null
+                    )
                 }
             }
         }
