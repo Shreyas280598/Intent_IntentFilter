@@ -11,6 +11,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
@@ -21,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
 import com.example.intentintentfilter.ui.theme.IntentIntentFilterTheme
 import java.util.Currency
 import java.util.Locale
@@ -42,9 +44,12 @@ class MainActivity : ComponentActivity() {
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    TextField(label = { Text("Enter Country Name") },
+                    TextField(
+                        label = { Text("Enter Country Name") },
                         value = changedString,
-                        onValueChange = { changedString = it })
+                        onValueChange = { changedString = it },
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
+                    )
                     Button(onClick = {
                         getLocaleByCountry(changedString)?.let {
                             val currency = Currency.getInstance(it)
