@@ -49,13 +49,13 @@ class MainActivity : ComponentActivity() {
                         getLocaleByCountry(changedString)?.let {
                             val currency = Currency.getInstance(it)
                             val currencyCode: String = currency.currencyCode
-                            Toast.makeText(applicationContext, currencyCode, Toast.LENGTH_SHORT)
+                            Toast.makeText(applicationContext, currencyCode, Toast.LENGTH_LONG)
                                 .show()
                         } ?: run {
                             Toast.makeText(
                                 applicationContext,
                                 "Country not found",
-                                Toast.LENGTH_SHORT
+                                Toast.LENGTH_LONG
                             ).show()
                         }
                     }) {
