@@ -64,7 +64,7 @@ class MainActivity : ComponentActivity() {
                             ).show()
                         }
                     }) {
-                        Text(text = "Click me to get Country Code")
+                        Text(text = "Click to get Currency Code")
                     }
 
                 }
