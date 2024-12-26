@@ -73,6 +73,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun getLocaleByCountry(countryName: String): Locale? {
+        if (countryName.isEmpty()) return null
         return Locale.getAvailableLocales()
             .find { it.displayCountry.equals(countryName, ignoreCase = false) }
     }
