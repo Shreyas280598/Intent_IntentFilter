@@ -1,34 +1,31 @@
 package com.example.intentintentfilter
 
-import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import coil.compose.AsyncImage
+import androidx.compose.ui.text.input.ImeAction
 import com.example.intentintentfilter.ui.theme.IntentIntentFilterTheme
+import java.util.Currency
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     private val viewModel by viewModels<ImageViewModel>()
@@ -47,54 +44,38 @@ class MainActivity : ComponentActivity() {
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-
-
-                    TextField(value = changedString, onValueChange = {
-                        changedString = it
-                    })
+                    TextField(
+                        label = { Text("Enter Country Name") },
+                        value = changedString,
+                        onValueChange = { changedString = it },
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
+                    )
                     Button(onClick = {
-//                        Intent(applicationContext, SecondActivity::class.java).also {
-//                            startActivity(it)
-//                        }
-//                        try {
-//                            Intent(Intent.ACTION_MAIN).also {
-//                                it.`package` = "com.google.android.youtube"
-//                                startActivity(it)
-//                            }
-//                        } catch (e: ActivityNotFoundException){
-//                            e.printStackTrace()
-//                        }
-                        //Implicit Intent
-
-//                        val intent = Intent(Intent.ACTION_SEND).apply {
-//                            type = "text/plain"
-//                            putExtra("plainText", "this is a plain text test from main Activity")
-//                            putExtra(Intent.EXTRA_SUBJECT, "This is subject")
-//                            putExtra(Intent.EXTRA_TEXT, "This is a body of the email")
-//                        }
-//                        try {
-//                            startActivity(intent)
-//                        } catch (e: ActivityNotFoundException){
-//                            e.printStackTrace()
-//                        }
-
-                        val intent = Intent(applicationContext, SecondActivity::class.java).apply {
-                            type = "image/*"
-                            putExtra("plainImage", viewModel.uri)
+                        getLocaleByCountry(changedString)?.let {
+                            val currency = Currency.getInstance(it)
+                            val currencyCode: String = currency.currencyCode
+                            Toast.makeText(applicationContext, currencyCode, Toast.LENGTH_LONG)
+                                .show()
+                        } ?: run {
+                            Toast.makeText(
+                                applicationContext,
+                                "Country not found",
+                                Toast.LENGTH_LONG
+                            ).show()
                         }
-                        try {
-                            startActivity(intent)
-                        } catch (e: ActivityNotFoundException) {
-                            e.printStackTrace()
-                        }
-
                     }) {
-                        Text(text = "Click me")
+                        Text(text = "Click to get Currency Code")
                     }
 
                 }
             }
         }
+    }
+
+    private fun getLocaleByCountry(countryName: String): Locale? {
+        if (countryName.isEmpty()) return null
+        return Locale.getAvailableLocales()
+            .find { it.displayCountry.equals(countryName, ignoreCase = false) }
     }
 
     override fun onNewIntent(intent: Intent?) {
