@@ -4,7 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -24,8 +24,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import com.example.intentintentfilter.ui.theme.IntentIntentFilterTheme
-import java.util.Currency
-import java.util.Locale
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import org.json.JSONObject
+import java.io.IOException
+
 
 class MainActivity : ComponentActivity() {
     private val viewModel by viewModels<ImageViewModel>()
@@ -51,18 +57,29 @@ class MainActivity : ComponentActivity() {
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
                     )
                     Button(onClick = {
-                        getLocaleByCountry(changedString)?.let {
-                            val currency = Currency.getInstance(it)
-                            val currencyCode: String = currency.currencyCode
-                            Toast.makeText(applicationContext, currencyCode, Toast.LENGTH_LONG)
-                                .show()
-                        } ?: run {
-                            Toast.makeText(
-                                applicationContext,
-                                "Country not found",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
+                        val client = OkHttpClient()
+                        val request = Request.Builder()
+                            .url("https://api.apiverve.com/v1/unitconverter?value=${changedString}&from=cm&to=m")
+                            .addHeader("x-api-key", "28cf7f77-3c23-436c-8f3b-de745609c843")
+                            .build()
+
+                        client.newCall(request).enqueue(object : Callback {
+                            override fun onFailure(call: Call, e: IOException) {
+                                e.printStackTrace()
+                            }
+
+                            override fun onResponse(call: Call, response: Response) {
+                                response.use {
+                                    if (!it.isSuccessful) throw IOException("Unexpected code $response")
+                                    val resStr = response.body!!.string()
+                                    val json = JSONObject(resStr)
+                                    json.keys().forEach { key ->
+                                        if (key == "data") {
+                                           Log.e("Shreyas", "${json[key]}")
+                                        } }
+                                }
+                            }
+                        })
                     }) {
                         Text(text = "Click to get Currency Code")
                     }
@@ -70,12 +87,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
-
-    private fun getLocaleByCountry(countryName: String): Locale? {
-        if (countryName.isEmpty()) return null
-        return Locale.getAvailableLocales()
-            .find { it.displayCountry.equals(countryName, ignoreCase = false) }
     }
 
     override fun onNewIntent(intent: Intent?) {
