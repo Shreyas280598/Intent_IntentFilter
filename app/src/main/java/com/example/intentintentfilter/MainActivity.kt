@@ -4,13 +4,14 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -23,6 +24,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.intentintentfilter.ui.theme.IntentIntentFilterTheme
 import okhttp3.Call
 import okhttp3.Callback
@@ -44,6 +47,9 @@ class MainActivity : ComponentActivity() {
                 var changedString by remember {
                     mutableStateOf("")
                 }
+                var data by remember {
+                    mutableStateOf(null as TestClass?)
+                }
                 // A surface container using the 'background' color from the theme
                 Column(
                     modifier = Modifier.fillMaxSize(),
@@ -57,36 +63,64 @@ class MainActivity : ComponentActivity() {
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
                     )
                     Button(onClick = {
-                        val client = OkHttpClient()
-                        val request = Request.Builder()
-                            .url("https://api.apiverve.com/v1/unitconverter?value=${changedString}&from=cm&to=m")
-                            .addHeader("x-api-key", "28cf7f77-3c23-436c-8f3b-de745609c843")
-                            .build()
-
-                        client.newCall(request).enqueue(object : Callback {
-                            override fun onFailure(call: Call, e: IOException) {
-                                e.printStackTrace()
-                            }
-
-                            override fun onResponse(call: Call, response: Response) {
-                                response.use {
-                                    if (!it.isSuccessful) throw IOException("Unexpected code $response")
-                                    val resStr = response.body!!.string()
-                                    val json = JSONObject(resStr)
-                                    json.keys().forEach { key ->
-                                        if (key == "data") {
-                                           Log.e("Shreyas", "${json[key]}")
-                                        } }
-                                }
-                            }
-                        })
+                        apiCall(changedString) {
+                            data = it
+                        }
                     }) {
                         Text(text = "Click to get Currency Code")
                     }
+                    Spacer(modifier = Modifier.height(20.dp))
+                    Text(
+                        text = data?.data?.result?.result.toString(),
+                        fontSize = 24.sp,
+                        modifier = Modifier
+                    )
 
                 }
             }
         }
+    }
+
+    private fun apiCall(
+        changedString: String,
+        onDataChange: (TestClass) -> Unit,
+    ) {
+        val client = OkHttpClient()
+        val request = Request.Builder()
+            .url("https://api.apiverve.com/v1/unitconverter?value=${changedString}&from=cm&to=m")
+            .addHeader("x-api-key", "28cf7f77-3c23-436c-8f3b-de745609c843")
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                e.printStackTrace()
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use {
+                    if (!it.isSuccessful) throw IOException("Unexpected code $response")
+                    val resStr = response.body!!.string()
+                    val json = JSONObject(resStr)
+                    val result = json.getJSONObject("data").getString("result")
+                    val jsonObject = JSONObject(result)
+                    json.keys().forEach { key ->
+                        if (key == "data") {
+                            val data = TestClass(
+                                code = json.getInt("code"),
+                                data = Data(
+                                    result = Result(
+                                        from = jsonObject.getString("from"),
+                                        to = jsonObject.getString("to"),
+                                        result = jsonObject.getInt("result")
+                                    )
+                                ),
+                            )
+                            onDataChange(data)
+                        }
+                    }
+                }
+            }
+        })
     }
 
     override fun onNewIntent(intent: Intent?) {
