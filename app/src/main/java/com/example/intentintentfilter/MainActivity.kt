@@ -50,7 +50,6 @@ class MainActivity : ComponentActivity() {
                 var data by remember {
                     mutableStateOf(null as TestClass?)
                 }
-                // A surface container using the 'background' color from the theme
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
